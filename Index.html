@@ -1,0 +1,2878 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Chai Wala - Tea Shop Management</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+  <style>
+    :root {
+      --primary: #2e7d32;
+      --primary-dark: #1b5e20;
+      --primary-light: #4caf50;
+      --secondary: #1565c0;
+      --accent: #ff6f00;
+      --light: #f8f9fa;
+      --dark: #263238;
+      --gray: #78909c;
+      --success: #2e7d32;
+      --warning: #f57c00;
+      --error: #d32f2f;
+      --info: #0288d1;
+      --card-shadow: 0 4px 12px rgba(0,0,0,0.08);
+      --hover-shadow: 0 8px 16px rgba(0,0,0,0.12);
+    }
+    
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: 'Poppins', 'Segoe UI', Tahoma, sans-serif;
+    }
+    
+    body {
+      background: linear-gradient(135deg, #f1f8e9 0%, #e8f5e9 100%);
+      color: var(--dark);
+      line-height: 1.6;
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+    
+    .container {
+      width: 100%;
+      max-width: 1400px;
+      margin: 0 auto;
+      padding: 15px;
+    }
+    
+    header {
+      background: linear-gradient(to right, var(--primary), var(--primary-dark));
+      color: white;
+      padding: 1.2rem;
+      text-align: center;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+      border-radius: 0 0 12px 12px;
+      margin-bottom: 25px;
+      position: relative;
+      overflow: hidden;
+    }
+    
+    header::before {
+      content: '';
+      position: absolute;
+      top: -50%;
+      left: -50%;
+      width: 200%;
+      height: 200%;
+      background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
+      transform: rotate(30deg);
+      animation: shimmer 8s infinite linear;
+    }
+    
+    @keyframes shimmer {
+      0% { transform: translateX(-100%) rotate(30deg); }
+      100% { transform: translateX(100%) rotate(30deg); }
+    }
+    
+    .logo {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+      margin-bottom: 8px;
+      position: relative;
+      z-index: 1;
+    }
+    
+    .logo i {
+      font-size: 2.2rem;
+      animation: bounce 2s infinite;
+    }
+    
+    @keyframes bounce {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-10px); }
+    }
+    
+    .logo h1 {
+      font-size: 2rem;
+      font-weight: 700;
+    }
+    
+    .tabs-container {
+      position: relative;
+      margin: 20px 0;
+    }
+    
+    .tabs {
+      display: flex;
+      flex-wrap: wrap;
+      background: white;
+      border-radius: 10px;
+      overflow: hidden;
+      box-shadow: var(--card-shadow);
+      transition: all 0.3s ease;
+    }
+    
+    .mobile-tabs-toggle {
+      display: none;
+      width: 100%;
+      padding: 14px 24px;
+      background: var(--primary);
+      color: white;
+      border: none;
+      border-radius: 10px;
+      cursor: pointer;
+      font-weight: 600;
+      justify-content: space-between;
+      align-items: center;
+      box-shadow: var(--card-shadow);
+      margin-bottom: 10px;
+    }
+    
+    .tab-btn {
+      padding: 14px 20px;
+      background: none;
+      border: none;
+      cursor: pointer;
+      font-weight: 600;
+      color: var(--dark);
+      transition: all 0.3s ease;
+      position: relative;
+      overflow: hidden;
+      flex: 1;
+      min-width: 120px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+    
+    .tab-btn::after {
+      content: '';
+      position: absolute;
+      bottom: 0;
+      left: 50%;
+      width: 0;
+      height: 3px;
+      background: var(--primary);
+      transition: all 0.3s ease;
+      transform: translateX(-50%);
+    }
+    
+    .tab-btn.active {
+      color: var(--primary);
+    }
+    
+    .tab-btn.active::after {
+      width: 80%;
+    }
+    
+    .tab-btn:hover::after {
+      width: 60%;
+    }
+    
+    .tab-content {
+      display: none;
+      padding: 25px;
+      background: white;
+      border-radius: 12px;
+      box-shadow: var(--card-shadow);
+      margin-bottom: 25px;
+      animation: fadeIn 0.5s ease;
+    }
+    
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    
+    .tab-content.active {
+      display: block;
+    }
+    
+    .card {
+      background: white;
+      border-radius: 12px;
+      box-shadow: var(--card-shadow);
+      margin-bottom: 25px;
+      overflow: hidden;
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+    
+    .card:hover {
+      transform: translateY(-5px);
+      box-shadow: var(--hover-shadow);
+    }
+    
+    .card-header {
+      padding: 18px 25px;
+      background: linear-gradient(to right, #e8f5e9, #c8e6c9);
+      border-bottom: 1px solid rgba(0,0,0,0.08);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 15px;
+    }
+    
+    .card-body {
+      padding: 25px;
+    }
+    
+    .form-group {
+      margin-bottom: 18px;
+      position: relative;
+    }
+    
+    label {
+      display: block;
+      margin-bottom: 8px;
+      font-weight: 500;
+      color: var(--dark);
+    }
+    
+    input, select, textarea {
+      width: 100%;
+      padding: 14px;
+      border: 1px solid var(--gray);
+      border-radius: 8px;
+      font-size: 16px;
+      transition: all 0.3s ease;
+      background: var(--light);
+    }
+    
+    input:focus, select:focus, textarea:focus {
+      outline: none;
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px rgba(46, 125, 50, 0.2);
+    }
+    
+    button {
+      padding: 12px 20px;
+      background: var(--primary);
+      color: white;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 16px;
+      font-weight: 600;
+      transition: all 0.3s ease;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      position: relative;
+      overflow: hidden;
+    }
+    
+    button::after {
+      content: '';
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      top: 0;
+      left: -100%;
+      background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+      transition: all 0.5s ease;
+    }
+    
+    button:hover::after {
+      left: 100%;
+    }
+    
+    button:hover {
+      background: var(--primary-dark);
+      transform: translateY(-2px);
+      box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+    }
+    
+    button:active {
+      transform: translateY(0);
+    }
+    
+    .btn-loading {
+      position: relative;
+      color: transparent !important;
+    }
+    
+    .btn-loading::before {
+      content: '';
+      position: absolute;
+      width: 16px;
+      height: 16px;
+      border: 2px solid transparent;
+      border-top: 2px solid white;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+    }
+    
+    .btn-warning {
+      background: var(--warning);
+    }
+    
+    .btn-warning:hover {
+      background: #e65100;
+    }
+    
+    .btn-info {
+      background: var(--info);
+    }
+    
+    .btn-info:hover {
+      background: #01579b;
+    }
+    
+    .btn-success {
+      background: var(--success);
+    }
+    
+    .btn-success:hover {
+      background: #1b5e20;
+    }
+    
+    .btn-secondary {
+      background: var(--secondary);
+    }
+    
+    .btn-secondary:hover {
+      background: #0d47a1;
+    }
+    
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 20px 0;
+    }
+    
+    th, td {
+      padding: 15px;
+      text-align: left;
+      border-bottom: 1px solid #e0e0e0;
+    }
+    
+    th {
+      background-color: #f5f5f5;
+      font-weight: 600;
+      color: var(--dark);
+    }
+    
+    tr {
+      transition: background-color 0.3s ease;
+    }
+    
+    tr:hover {
+      background-color: rgba(0,0,0,0.02);
+    }
+    
+    .action-buttons {
+      display: flex;
+      gap: 8px;
+    }
+    
+    .action-btn {
+      padding: 8px 12px;
+      font-size: 14px;
+      border-radius: 6px;
+    }
+    
+    .modal {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0,0,0,0.6);
+      z-index: 1000;
+      justify-content: center;
+      align-items: center;
+      backdrop-filter: blur(4px);
+      animation: fadeIn 0.3s ease;
+      padding: 15px;
+    }
+    
+    .modal-content {
+      background: white;
+      padding: 30px;
+      border-radius: 12px;
+      width: 100%;
+      max-width: 600px;
+      max-height: 90vh;
+      overflow-y: auto;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+      transform: scale(0.9);
+      animation: zoomIn 0.3s ease forwards;
+    }
+    
+    @keyframes zoomIn {
+      to { transform: scale(1); }
+    }
+    
+    .modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 25px;
+      padding-bottom: 15px;
+      border-bottom: 1px solid #eee;
+    }
+    
+    .close {
+      font-size: 28px;
+      cursor: pointer;
+      color: var(--gray);
+      transition: color 0.3s ease;
+    }
+    
+    .close:hover {
+      color: var(--error);
+      transform: rotate(90deg);
+    }
+    
+    .search-container {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 15px;
+      margin-bottom: 20px;
+      align-items: center;
+    }
+    
+    .search-box {
+      flex: 1;
+      min-width: 250px;
+      position: relative;
+    }
+    
+    .search-box input {
+      padding-left: 40px;
+    }
+    
+    .search-box i {
+      position: absolute;
+      left: 15px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: var(--gray);
+    }
+    
+    .date-range {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+    
+    .date-range input {
+      min-width: 150px;
+    }
+    
+    .pagination {
+      display: flex;
+      justify-content: center;
+      margin-top: 25px;
+      gap: 8px;
+    }
+    
+    .pagination button {
+      min-width: 40px;
+      height: 40px;
+      padding: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: white;
+      color: var(--dark);
+      border: 1px solid #ddd;
+    }
+    
+    .pagination button.active {
+      background: var(--primary);
+      color: white;
+      border-color: var(--primary);
+    }
+    
+    .loader {
+      display: none;
+      text-align: center;
+      padding: 30px;
+    }
+    
+    .loader i {
+      font-size: 2.5rem;
+      color: var(--primary);
+      animation: spin 1s linear infinite;
+    }
+    
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+    
+    .stats-cards {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+      gap: 20px;
+      margin-bottom: 30px;
+    }
+    
+    .stat-card {
+      background: white;
+      border-radius: 12px;
+      padding: 20px;
+      box-shadow: var(--card-shadow);
+      text-align: center;
+      transition: transform 0.3s ease;
+      position: relative;
+      overflow: hidden;
+    }
+    
+    .stat-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 5px;
+      background: var(--primary);
+      transform: scaleX(0);
+      transform-origin: left;
+      transition: transform 0.3s ease;
+    }
+    
+    .stat-card:hover::before {
+      transform: scaleX(1);
+    }
+    
+    .stat-card:hover {
+      transform: translateY(-5px);
+    }
+    
+    .stat-card i {
+      font-size: 2.5rem;
+      color: var(--primary);
+      margin-bottom: 15px;
+    }
+    
+    .stat-card h3 {
+      font-size: 1.8rem;
+      margin: 10px 0;
+      color: var(--dark);
+    }
+    
+    .stat-card p {
+      color: var(--gray);
+      font-weight: 500;
+    }
+    
+    .inr {
+      font-family: Arial, sans-serif;
+    }
+    
+    /* Mobile-specific styles */
+    .mobile-view {
+      display: none;
+    }
+    
+    .desktop-view {
+      display: block;
+    }
+    
+    .mobile-card {
+      background: white;
+      border-radius: 10px;
+      padding: 15px;
+      margin-bottom: 15px;
+      box-shadow: var(--card-shadow);
+      transition: transform 0.3s ease;
+    }
+    
+    .mobile-card:active {
+      transform: scale(0.98);
+    }
+    
+    .mobile-card-header {
+      font-weight: 600;
+      margin-bottom: 10px;
+      color: var(--primary);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    
+    .mobile-card-body {
+      color: var(--dark);
+    }
+    
+    .mobile-card-body div {
+      margin-bottom: 8px;
+      display: flex;
+    }
+    
+    .mobile-card-body span:first-child {
+      font-weight: 500;
+      min-width: 80px;
+    }
+    
+    .mobile-actions {
+      display: flex;
+      gap: 10px;
+      margin-top: 15px;
+    }
+    
+    .mobile-actions button {
+      flex: 1;
+      padding: 8px 12px;
+      font-size: 14px;
+    }
+    
+    /* Custom scrollbar for mobile */
+    .mobile-scroll {
+      overflow-y: auto;
+      max-height: 70vh;
+      -webkit-overflow-scrolling: touch;
+      scrollbar-width: thin;
+      scrollbar-color: var(--primary) transparent;
+    }
+    
+    .mobile-scroll::-webkit-scrollbar {
+      width: 5px;
+    }
+    
+    .mobile-scroll::-webkit-scrollbar-thumb {
+      background: var(--primary);
+      border-radius: 10px;
+    }
+    
+    /* Toast notification */
+    .toast {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      padding: 15px 25px;
+      background: var(--dark);
+      color: white;
+      border-radius: 8px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+      z-index: 1001;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      transform: translateY(100px);
+      opacity: 0;
+      transition: all 0.3s ease;
+    }
+    
+    .toast.show {
+      transform: translateY(0);
+      opacity: 1;
+    }
+    
+    .toast.success {
+      background: var(--success);
+    }
+    
+    .toast.error {
+      background: var(--error);
+    }
+    
+    @media (max-width: 768px) {
+      .desktop-view {
+        display: none;
+      }
+      
+      .mobile-view {
+        display: block;
+      }
+      
+      .mobile-tabs-toggle {
+        display: flex;
+      }
+      
+      .tabs {
+        flex-direction: column;
+        position: absolute;
+        top: 100%;
+        left: 0;
+        width: 100%;
+        z-index: 100;
+        max-height: 0;
+        overflow: hidden;
+        transition: max-height 0.3s ease;
+      }
+      
+      .tabs.show {
+        max-height: 500px;
+      }
+      
+      .tab-btn {
+        width: 100%;
+        text-align: left;
+        border-bottom: 1px solid #eee;
+        justify-content: flex-start;
+        padding: 12px 20px;
+      }
+      
+      .tab-btn::after {
+        display: none;
+      }
+      
+      .card-header {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+      
+      .search-container {
+        flex-direction: column;
+        align-items: stretch;
+      }
+      
+      .date-range {
+        flex-direction: column;
+        align-items: stretch;
+      }
+      
+      .date-range span {
+        display: none;
+      }
+      
+      .modal-content {
+        padding: 20px;
+        width: 95%;
+      }
+      
+      .stats-cards {
+        grid-template-columns: 1fr;
+      }
+      
+      .tab-content {
+        padding: 15px;
+      }
+      
+      .card-body {
+        padding: 15px;
+      }
+      
+      .mobile-scroll {
+        max-height: 60vh;
+      }
+      
+      .action-buttons {
+        flex-wrap: wrap;
+      }
+    }
+    
+    @media (min-width: 769px) and (max-width: 1024px) {
+      .stats-cards {
+        grid-template-columns: repeat(2, 1fr);
+      }
+      
+      .tab-btn {
+        min-width: auto;
+        padding: 14px 16px;
+        font-size: 14px;
+      }
+    }
+    
+    /* Print styles for reports */
+    @media print {
+      body * {
+        visibility: hidden;
+      }
+      .tab-content.active, .tab-content.active * {
+        visibility: visible;
+      }
+      .tab-content.active {
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 100%;
+      }
+      .no-print {
+        display: none !important;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="logo">
+      <i class="fas fa-mug-hot"></i>
+      <h1>Chai Wala Software</h1>
+    </div>
+  </header>
+  
+  <div class="container">
+    <div class="tabs-container">
+      <button class="mobile-tabs-toggle">
+        <span>Menu</span>
+        <i class="fas fa-bars"></i>
+      </button>
+      <div class="tabs">
+        <button class="tab-btn active" data-tab="dashboard"><i class="fas fa-chart-line"></i> <span>Dashboard</span></button>
+        <button class="tab-btn" data-tab="orders"><i class="fas fa-receipt"></i> <span>Orders</span></button>
+        <button class="tab-btn" data-tab="payments"><i class="fas fa-money-bill-wave"></i> <span>Payments</span></button>
+        <button class="tab-btn" data-tab="customers"><i class="fas fa-users"></i> <span>Customers</span></button>
+        <button class="tab-btn" data-tab="items"><i class="fas fa-coffee"></i> <span>Items</span></button>
+        <button class="tab-btn" data-tab="reports"><i class="fas fa-chart-pie"></i> <span>Reports</span></button>
+      </div>
+    </div>
+    
+    <!-- Dashboard Tab -->
+    <div id="dashboard" class="tab-content active">
+      <div class="card">
+        <div class="card-header">
+          <h2>Business Overview</h2>
+          <span id="dashboard-date"></span>
+        </div>
+          <div class="card-body">
+            <div class="stats-cards">
+              <!-- Overall Statistics Card -->
+              <div style="background: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%); color: white; padding: 25px; border-radius: 12px; box-shadow: 0 10px 20px rgba(0,0,0,0.2); width: 280px; flex-shrink: 0;">
+                <i class="fas fa-chart-column" style="display: block; text-align: center; font-size: 42px; margin-bottom: 15px;"></i>
+                <h3 style="text-align: center; margin: 0 0 20px 0; font-size: 22px; font-weight: 600;">Overall</h3>
+                <h4 style="display: flex; justify-content: space-between; margin: 12px 0; font-weight: 500; font-size: 16px;">
+                  <span>Total Orders:</span> 
+                  <span id="total-orders" style="font-weight: 600;">0</span>
+                </h4>
+                <h4 style="display: flex; justify-content: space-between; margin: 12px 0; font-weight: 500; font-size: 16px;">
+                  <span>Total Revenue:</span> 
+                  <span style="font-weight: 600;"><span class="inr">₹</span> <span id="total-revenue">0</span></span>
+                </h4>
+                <h4 style="display: flex; justify-content: space-between; margin: 12px 0; font-weight: 500; font-size: 16px;">
+                  <span>Total Customers:</span> 
+                  <span id="total-customers" style="font-weight: 600;">0</span>
+                </h4>
+                <h4 style="display: flex; justify-content: space-between; margin: 12px 0; font-weight: 500; font-size: 16px;">
+                  <span>Menu Items:</span> 
+                  <span id="total-items" style="font-weight: 600;">0</span>
+                </h4>
+              </div>
+
+              <!-- Today's Statistics Card -->
+              <div style="background: linear-gradient(135deg, #43cea2 0%, #185a9d 100%); color: white; padding: 25px; border-radius: 12px; box-shadow: 0 10px 20px rgba(0,0,0,0.2); width: 280px; flex-shrink: 0;">
+                <i class="fas fa-calendar" style="display: block; text-align: center; font-size: 42px; margin-bottom: 15px;"></i>
+                <h3 style="text-align: center; margin: 0 0 20px 0; font-size: 22px; font-weight: 600;">Today's</h3>
+                <h4 style="display: flex; justify-content: space-between; margin: 12px 0; font-weight: 500; font-size: 16px;">
+                  <span>Orders:</span> 
+                  <span id="todays-total-orders" style="font-weight: 600;">0</span>
+                </h4>
+                <h4 style="display: flex; justify-content: space-between; margin: 12px 0; font-weight: 500; font-size: 16px;">
+                  <span>Revenue:</span> 
+                  <span style="font-weight: 600;"><span class="inr">₹ </span><span id="todays-total-revenue-orders">0</span></span>
+                </h4>
+                <h4 style="display: flex; justify-content: space-between; margin: 12px 0; font-weight: 500; font-size: 16px;">
+                  <span>Paid:</span> 
+                  <span style="font-weight: 600;"><span class="inr">₹ </span><span id="todays-total-paid-orders">0</span></span>
+                </h4>
+                <h4 style="display: flex; justify-content: space-between; margin: 12px 0; font-weight: 500; font-size: 16px;">
+                  <span>Unpaid:</span> 
+                  <span style="font-weight: 600;"><span class="inr">₹ </span><span id="todays-total-unpaid-orders">0</span></span>
+                </h4>
+              </div>
+
+              <!-- Current Month Statistics Card -->
+              <div style="background: linear-gradient(135deg, #ff9966 0%, #ff5e62 100%); color: white; padding: 25px; border-radius: 12px; box-shadow: 0 10px 20px rgba(0,0,0,0.2); width: 280px; flex-shrink: 0;">
+                <i class="fas fa-calendar" style="display: block; text-align: center; font-size: 42px; margin-bottom: 15px;"></i>
+                <h3 style="text-align: center; margin: 0 0 20px 0; font-size: 22px; font-weight: 600;">Current Month </h3>
+                <h4 style="display: flex; justify-content: space-between; margin: 12px 0; font-weight: 500; font-size: 16px;">
+                  <span>Orders:</span> 
+                  <span id="current-month-total-orders" style="font-weight: 600;">0</span>
+                </h4>
+                <h4 style="display: flex; justify-content: space-between; margin: 12px 0; font-weight: 500; font-size: 16px;">
+                  <span>Revenue:</span> 
+                  <span style="font-weight: 600;"><span class="inr">₹ </span><span id="current-month-total-revenue-orders">0</span></span>
+                </h4>
+                <h4 style="display: flex; justify-content: space-between; margin: 12px 0; font-weight: 500; font-size: 16px;">
+                  <span>Paid:</span> 
+                  <span style="font-weight: 600;"><span class="inr">₹ </span><span id="current-month-total-paid-orders">0</span></span>
+                </h4>
+                <h4 style="display: flex; justify-content: space-between; margin: 12px 0; font-weight: 500; font-size: 16px;">
+                  <span>Unpaid:</span> 
+                  <span style="font-weight: 600;"><span class="inr">₹ </span><span id="current-month-total-unpaid-orders">0</span></span>
+                </h4>
+              </div>
+
+              <!-- Last Month Statistics Card -->
+              <div style="background: linear-gradient(135deg, #834d9b 0%, #d04ed6 100%); color: white; padding: 25px; border-radius: 12px; box-shadow: 0 10px 20px rgba(0,0,0,0.2); width: 280px; flex-shrink: 0;">
+                <i class="fas fa-calendar" style="display: block; text-align: center; font-size: 42px; margin-bottom: 15px;"></i>
+                <h3 style="text-align: center; margin: 0 0 20px 0; font-size: 22px; font-weight: 600;">Last Month </h3>
+                <h4 style="display: flex; justify-content: space-between; margin: 12px 0; font-weight: 500; font-size: 16px;">
+                  <span>Orders:</span> 
+                  <span id="last-month-total-orders" style="font-weight: 600;">0</span>
+                </h4>
+                <h4 style="display: flex; justify-content: space-between; margin: 12px 0; font-weight: 500; font-size: 16px;">
+                  <span>Revenue:</span> 
+                  <span style="font-weight: 600;"><span class="inr">₹ </span><span id="last-month-total-revenue-orders">0</span></span>
+                </h4>
+                <h4 style="display: flex; justify-content: space-between; margin: 12px 0; font-weight: 500; font-size: 16px;">
+                  <span>Paid:</span> 
+                  <span style="font-weight: 600;"><span class="inr">₹ </span><span id="last-month-total-paid-orders">0</span></span>
+                </h4>
+                <h4 style="display: flex; justify-content: space-between; margin: 12px 0; font-weight: 500; font-size: 16px;">
+                  <span>Unpaid:</span> 
+                  <span style="font-weight: 600;"><span class="inr">₹ </span><span id="last-month-total-unpaid-orders">0</span></span>
+                </h4>
+              </div> 
+            </div> 
+          </div>
+          <div class="card">
+            <div class="card-header">
+              <h2>Recent Orders</h2>
+            </div>
+            <div class="card-body">
+              <div class="loader" id="dashboard-loader">
+                <i class="fas fa-spinner"></i>
+                <p>Loading data...</p>
+              </div>
+              <div id="recent-orders-container" style="margin: 20px 0;"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Customers Tab -->
+    <div id="customers" class="tab-content">
+      <div class="card">
+        <div class="card-header">
+          <h2>Customer Management</h2>
+          <button id="addCustomerBtn"><i class="fas fa-plus"></i> Add New Customer</button>
+        </div>
+        <div class="card-body">
+          <div class="search-container">
+            <div class="search-box">
+              <i class="fas fa-search"></i>
+              <input type="text" id="customerSearch" placeholder="Search customers...">
+            </div>
+            <button id="searchCustomerBtn"><i class="fas fa-filter"></i> Search</button>
+          </div>
+          
+          <div class="loader" id="customers-loader">
+            <i class="fas fa-spinner"></i>
+            <p>Loading customers...</p>
+          </div>
+          
+          <div class="desktop-view">
+            <div id="customersTableContainer"></div>
+          </div>
+          
+          <div class="mobile-view mobile-scroll" id="customersMobileContainer"></div>
+          
+          <div class="pagination" id="customers-pagination"></div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Items Tab -->
+    <div id="items" class="tab-content">
+      <div class="card">
+        <div class="card-header">
+          <h2>Item Management</h2>
+          <button id="addItemBtn"><i class="fas fa-plus"></i> Add New Item</button>
+        </div>
+        <div class="card-body">
+          <div class="search-container">
+            <div class="search-box">
+              <i class="fas fa-search"></i>
+              <input type="text" id="itemSearch" placeholder="Search items...">
+            </div>
+            <button id="searchItemBtn"><i class="fas fa-filter"></i> Search</button>
+          </div>
+          
+          <div class="loader" id="items-loader">
+            <i class="fas fa-spinner"></i>
+            <p>Loading items...</p>
+          </div>
+          
+          <div class="desktop-view">
+            <div id="itemsTableContainer"></div>
+          </div>
+          
+          <div class="mobile-view mobile-scroll" id="itemsMobileContainer"></div>
+          
+          <div class="pagination" id="items-pagination"></div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Orders Tab -->
+    <div id="orders" class="tab-content">
+      <div class="card">
+        <div class="card-header">
+          <h2>Order Management</h2>
+          <button id="addOrderBtn"><i class="fas fa-plus"></i> Create New Order</button>
+        </div>
+        <div class="card-body">
+          <div class="search-container">
+            <div class="search-box">
+              <i class="fas fa-search"></i>
+              <input type="text" id="orderSearch" placeholder="Search orders...">
+            </div>
+            <div class="date-range">
+              <input type="date" id="orderDateFrom">
+              <span>to</span>
+              <input type="date" id="orderDateTo">
+            </div>
+            <button id="searchOrderBtn"><i class="fas fa-filter"></i> Filter</button>
+            <button class="btn-success" id="exportOrderBtn"><i class="fas fa-file-excel"></i> Export</button>
+          </div>
+          
+          <div class="loader" id="orders-loader">
+            <i class="fas fa-spinner"></i>
+            <p>Loading orders...</p>
+          </div>
+          
+          <div class="desktop-view">
+            <div id="ordersTableContainer"></div>
+          </div>
+          
+          <div class="mobile-view mobile-scroll" id="ordersMobileContainer"></div>
+          
+          <div class="pagination" id="orders-pagination"></div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Payments Tab -->
+    <div id="payments" class="tab-content">
+      <div class="card">
+        <div class="card-header">
+          <h2>Payment Management</h2>
+          <button id="addPaymentBtn"><i class="fas fa-plus"></i> Record New Payment</button>
+        </div>
+        <div class="card-body">
+          <div class="search-container">
+            <div class="search-box">
+              <i class="fas fa-search"></i>
+              <input type="text" id="paymentSearch" placeholder="Search payments...">
+            </div>
+            <div class="date-range">
+              <input type="date" id="paymentDateFrom">
+              <span>to</span>
+              <input type="date" id="paymentDateTo">
+            </div>
+            <button id="searchPaymentBtn"><i class="fas fa-filter"></i> Filter</button>
+            <button class="btn-success" id="exportPaymentBtn"><i class="fas fa-file-excel"></i> Export</button>
+          </div>
+          
+          <div class="loader" id="payments-loader">
+            <i class="fas fa-spinner"></i>
+            <p>Loading payments...</p>
+          </div>
+          
+          <div class="desktop-view">
+            <div id="paymentsTableContainer"></div>
+          </div>
+          
+          <div class="mobile-view mobile-scroll" id="paymentsMobileContainer"></div>
+          
+          <div class="pagination" id="payments-pagination"></div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Reports Tab -->
+    <div id="reports" class="tab-content">
+      <div class="card">
+        <div class="card-header">
+          <h2>Business Reports</h2>
+        </div>
+        <div class="card-body">
+          <div class="search-container">
+            <div class="date-range">
+              <input type="date" id="reportDateFrom">
+              <span>to</span>
+              <input type="date" id="reportDateTo">
+            </div>
+             
+            <button id="customReportBtn"><i class="fas fa-filter"></i> Generate Report</button>
+            <button class="btn-secondary" id="printReportBtn"><i class="fas fa-print"></i> Print Report</button>
+          </div>
+          
+          <div class="loader" id="reports-loader">
+            <i class="fas fa-spinner"></i>
+            <p>Generating report...</p>
+          </div>
+          
+          <div id="report-container"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Customer Modal -->
+  <div id="customerModal" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2 id="customerModalTitle"><i class="fas fa-user"></i> Add Customer</h2>
+        <span class="close" onclick="closeModal('customerModal')">&times;</span>
+      </div>
+      <form id="customerForm">
+        <input type="hidden" id="customerId">
+        <div class="form-group">
+          <label for="customerName">Name *</label>
+          <input type="text" id="customerName" required>
+        </div>
+        <div class="form-group">
+          <label for="customerMobile">Mobile *</label>
+          <input type="text" id="customerMobile" required>
+        </div>
+        <div class="form-group">
+          <label for="customerAddress">Address</label>
+          <textarea id="customerAddress" rows="3"></textarea>
+        </div>
+        <div class="form-group">
+          <label for="customerRemarks">Remarks</label>
+          <textarea id="customerRemarks" rows="3"></textarea>
+        </div>
+        <button type="submit" id="saveCustomerBtn"><i class="fas fa-save"></i> Save Customer</button>
+      </form>
+    </div>
+  </div>
+  
+  <!-- Item Modal -->
+  <div id="itemModal" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2 id="itemModalTitle"><i class="fas fa-coffee"></i> Add Item</h2>
+        <span class="close" onclick="closeModal('itemModal')">&times;</span>
+      </div>
+      <form id="itemForm">
+        <input type="hidden" id="itemId">
+        <div class="form-group">
+          <label for="itemName">Name *</label>
+          <input type="text" id="itemName" required>
+        </div>
+        <div class="form-group">
+          <label for="itemPrice">Price (<span class="inr">₹</span>) *</label>
+          <input type="number" id="itemPrice" step="0.01" min="0" required>
+        </div>
+        <div class="form-group">
+          <label for="itemRemarks">Remarks</label>
+          <textarea id="itemRemarks" rows="3"></textarea>
+        </div>
+        <button type="submit" id="saveItemBtn"><i class="fas fa-save"></i> Save Item</button>
+      </form>
+    </div>
+  </div>
+  
+  <!-- Order Modal -->
+  <div id="orderModal" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2 id="orderModalTitle"><i class="fas fa-receipt"></i> Create Order</h2>
+        <span class="close" onclick="closeModal('orderModal')">&times;</span>
+      </div>
+      <form id="orderForm">
+        <input type="hidden" id="orderId">
+        <div class="form-group">
+          <label for="orderDate">Date *</label>
+          <input type="date" id="orderDate" required>
+        </div>
+        <div class="form-group">
+          <label for="orderCustomer">Customer *</label>
+          <select id="orderCustomer" required>
+            <option value="">Select Customer</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label for="orderItems">Items * (Hold Ctrl to select multiple)</label>
+          <select id="orderItems" multiple required size="5">
+            <option value="">Loading items...</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label for="orderBillAmount">Bill Amount (<span class="inr">₹</span>) *</label>
+          <input type="number" id="orderBillAmount" step="0.01" min="0" required>
+        </div>
+        
+        <div class="form-group">
+          <label for="orderRemarks">Remarks</label>
+          <textarea id="orderRemarks" rows="3"></textarea>
+        </div>
+        <button type="submit" id="saveOrderBtn"><i class="fas fa-save"></i> Save Order</button>
+      </form>
+    </div>
+  </div>
+  
+  <!-- Payment Modal -->
+  <div id="paymentModal" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2 id="paymentModalTitle"><i class="fas fa-money-bill-wave"></i> Record Payment</h2>
+        <span class="close" onclick="closeModal('paymentModal')">&times;</span>
+      </div>
+      <form id="paymentForm">
+        <input type="hidden" id="paymentId">
+        <div class="form-group">
+          <label for="paymentDate">Date *</label>
+          <input type="date" id="paymentDate" required>
+        </div>
+        <div class="form-group">
+          <label for="paymentCustomer">Customer *</label>
+          <select id="paymentCustomer" required>
+            <option value="">Select Customer</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label for="paymentAmount">Amount (<span class="inr">₹</span>) *</label>
+          <input type="number" id="paymentAmount" step="0.01" min="0" required>
+        </div>
+        <div class="form-group">
+          <label for="paymentRemarks">Remarks</label>
+          <textarea id="paymentRemarks" rows="3"></textarea>
+        </div>
+        <button type="submit" id="savePaymentBtn"><i class="fas fa-save"></i> Save Payment</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- Toast Notification -->
+  <div class="toast" id="toast">
+    <i class="fas fa-check-circle"></i>
+    <span id="toast-message">Operation completed successfully</span>
+  </div>
+
+  <script>
+    // Global variables
+    let customers = [];
+    let items = [];
+    let orders = [];
+    let payments = [];
+    
+    // Pagination variables
+    const itemsPerPage = 10;
+    let currentPage = {
+      customers: 1,
+      items: 1,
+      orders: 1,
+      payments: 1
+    };
+    
+    // Initialize the application
+    document.addEventListener('DOMContentLoaded', function() {
+      initializeTabs();
+      loadAllData();
+      setupEventListeners();
+      setCurrentDate();
+      setDashboardDate();
+    });
+    
+    // Set current date in date fields
+    function setCurrentDate() {
+      const today = new Date().toISOString().split('T')[0];
+      document.getElementById('orderDate').value = today;
+      document.getElementById('paymentDate').value = today;
+      
+      // Set default date range for reports (current month)
+      const firstDay = new Date();
+      firstDay.setDate(1);
+      document.getElementById('reportDateFrom').value = firstDay.toISOString().split('T')[0];
+      document.getElementById('reportDateTo').value = today;
+      
+      // Set default date range for orders and payments (current month)
+      document.getElementById('orderDateFrom').value = firstDay.toISOString().split('T')[0];
+      document.getElementById('orderDateTo').value = today;
+      document.getElementById('paymentDateFrom').value = firstDay.toISOString().split('T')[0];
+      document.getElementById('paymentDateTo').value = today;
+    }
+    
+    // Set dashboard date
+    function setDashboardDate() {
+      const options = { year: 'numeric', month: 'long', day: 'numeric' };
+      const today = new Date().toLocaleDateString('en-IN', options);
+      document.getElementById('dashboard-date').textContent = today;
+    }
+    
+    // Initialize tab functionality
+    function initializeTabs() {
+      const tabButtons = document.querySelectorAll('.tab-btn');
+      const mobileToggle = document.querySelector('.mobile-tabs-toggle');
+      const tabsContainer = document.querySelector('.tabs');
+      
+      // Mobile tabs toggle
+      if (mobileToggle) {
+        mobileToggle.addEventListener('click', () => {
+          tabsContainer.classList.toggle('show');
+          const icon = mobileToggle.querySelector('i');
+          if (tabsContainer.classList.contains('show')) {
+            icon.classList.remove('fa-bars');
+            icon.classList.add('fa-times');
+          } else {
+            icon.classList.remove('fa-times');
+            icon.classList.add('fa-bars');
+          }
+        });
+      }
+      
+      tabButtons.forEach(button => {
+        button.addEventListener('click', () => {
+          const tabName = button.getAttribute('data-tab');
+          
+          // Deactivate all tabs
+          document.querySelectorAll('.tab-btn').forEach(btn => {
+            btn.classList.remove('active');
+          });
+          document.querySelectorAll('.tab-content').forEach(content => {
+            content.classList.remove('active');
+          });
+          
+          // Activate current tab
+          button.classList.add('active');
+          document.getElementById(tabName).classList.add('active');
+          
+          // Hide mobile tabs after selection
+          if (window.innerWidth <= 768) {
+            tabsContainer.classList.remove('show');
+            const icon = mobileToggle.querySelector('i');
+            icon.classList.remove('fa-times');
+            icon.classList.add('fa-bars');
+          }
+          
+          // If reports tab is clicked, generate default report
+          if (tabName === 'reports') {
+            generateReport('sales');
+          }
+        });
+      });
+    }
+    
+    // Setup event listeners for buttons and forms
+    function setupEventListeners() {
+      // Add buttons
+      document.getElementById('addCustomerBtn').addEventListener('click', () => openModal('customerModal', 'add'));
+      document.getElementById('addItemBtn').addEventListener('click', () => openModal('itemModal', 'add'));
+      document.getElementById('addOrderBtn').addEventListener('click', () => openModal('orderModal', 'add'));
+      document.getElementById('addPaymentBtn').addEventListener('click', () => openModal('paymentModal', 'add'));
+      
+      // Search buttons
+      document.getElementById('searchCustomerBtn').addEventListener('click', searchCustomers);
+      document.getElementById('searchItemBtn').addEventListener('click', searchItems);
+      document.getElementById('searchOrderBtn').addEventListener('click', searchOrders);
+      document.getElementById('searchPaymentBtn').addEventListener('click', searchPayments);
+      
+      // Export buttons
+      document.getElementById('exportOrderBtn').addEventListener('click', () => exportToExcel('orders'));
+      document.getElementById('exportPaymentBtn').addEventListener('click', () => exportToExcel('payments'));
+      
+      // Report buttons
+      //document.getElementById('salesReportBtn').addEventListener('click', () => generateReport('sales'));
+      document.getElementById('customReportBtn').addEventListener('click', () => generateReport('custom'));
+      document.getElementById('printReportBtn').addEventListener('click', printReport);
+      
+      // Form submissions
+      document.getElementById('customerForm').addEventListener('submit', handleCustomerSubmit);
+      document.getElementById('itemForm').addEventListener('submit', handleItemSubmit);
+      document.getElementById('orderForm').addEventListener('submit', handleOrderSubmit);
+      document.getElementById('paymentForm').addEventListener('submit', handlePaymentSubmit);
+      
+      // Search functionality
+      document.getElementById('customerSearch').addEventListener('keyup', function(event) {
+        if (event.key === 'Enter') searchCustomers();
+      });
+      
+      document.getElementById('itemSearch').addEventListener('keyup', function(event) {
+        if (event.key === 'Enter') searchItems();
+      });
+      
+      document.getElementById('orderSearch').addEventListener('keyup', function(event) {
+        if (event.key === 'Enter') searchOrders();
+      });
+      
+      document.getElementById('paymentSearch').addEventListener('keyup', function(event) {
+        if (event.key === 'Enter') searchPayments();
+      });
+    }
+    
+    // Show loading indicator on button
+    function setButtonLoading(button, isLoading) {
+      if (isLoading) {
+        button.classList.add('btn-loading');
+        button.disabled = true;
+      } else {
+        button.classList.remove('btn-loading');
+        button.disabled = false;
+      }
+    }
+    
+    // Show loading indicator
+    function showLoader(section) {
+      document.getElementById(`${section}-loader`).style.display = 'block';
+    }
+    
+    // Hide loading indicator
+    function hideLoader(section) {
+      document.getElementById(`${section}-loader`).style.display = 'none';
+    }
+    
+    // Show toast notification
+    function showToast(message, type = 'success') {
+      const toast = document.getElementById('toast');
+      const toastMessage = document.getElementById('toast-message');
+      const toastIcon = toast.querySelector('i');
+      
+      toastMessage.textContent = message;
+      
+      // Set icon based on type
+      if (type === 'success') {
+        toastIcon.className = 'fas fa-check-circle';
+        toast.className = 'toast success';
+      } else {
+        toastIcon.className = 'fas fa-exclamation-circle';
+        toast.className = 'toast error';
+      }
+      
+      toast.classList.add('show');
+      
+      // Hide after 3 seconds
+      setTimeout(() => {
+        toast.classList.remove('show');
+      }, 3000);
+    }
+    
+    // Load all data from the server
+    function loadAllData() {
+      showLoader('dashboard');
+      
+      google.script.run
+        .withSuccessHandler(data => {
+          customers = data.customers || [];
+          items = data.items || [];
+          orders = data.orders || [];
+          payments = data.payments || [];
+          
+          // Update dashboard stats
+          updateDashboardStats();
+          
+          // Render all tables
+          renderCustomersTable();
+          renderItemsTable();
+          renderOrdersTable();
+          renderPaymentsTable();
+          
+          // Populate dropdowns
+          populateCustomerDropdowns();
+          populateItemsDropdown();
+          
+          hideLoader('dashboard');
+          showToast('Data loaded successfully');
+        })
+        .withFailureHandler(showError)
+        .getAllData();
+    }
+    
+    // Update dashboard statistics
+    function updateDashboardStats() {
+        const today = new Date();
+        const todayString = today.toISOString().split('T')[0];
+        
+        const firstDayOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
+        const firstDayOfMonthString = firstDayOfMonth.toISOString().split('T')[0];
+        
+        const firstDayOfLastMonth = new Date(today.getFullYear(), today.getMonth() - 1, 1);
+        const lastDayOfLastMonth = new Date(today.getFullYear(), today.getMonth(), 0);
+        const firstDayOfLastMonthString = firstDayOfLastMonth.toISOString().split('T')[0];
+        const lastDayOfLastMonthString = lastDayOfLastMonth.toISOString().split('T')[0];
+        
+        // Filter orders by date
+        const todaysOrders = orders.filter(order => order.date.includes(todayString));
+        const currentMonthOrders = orders.filter(order => order.date >= firstDayOfMonthString);
+        const lastMonthOrders = orders.filter(order => 
+            order.date >= firstDayOfLastMonthString && order.date <= lastDayOfLastMonthString
+        );
+        
+        // Filter payments by date
+        const todaysPayments = payments.filter(payment => payment.date.includes(todayString));
+        const currentMonthPayments = payments.filter(payment => payment.date >= firstDayOfMonthString);
+        const lastMonthPayments = payments.filter(payment => 
+            payment.date >= firstDayOfLastMonthString && payment.date <= lastDayOfLastMonthString
+        );
+        
+        // Update overall statistics
+        document.getElementById('total-orders').textContent = orders.length;
+        document.getElementById('total-customers').textContent = customers.length;
+        document.getElementById('total-items').textContent = items.length;
+        
+        // Calculate total revenue
+        const totalRevenue = orders.reduce((sum, order) => sum + parseFloat(order.billAmount || 0), 0);
+        document.getElementById('total-revenue').textContent = totalRevenue.toFixed(2);
+        
+        // Update today's statistics
+        document.getElementById('todays-total-orders').textContent = todaysOrders.length;
+        
+        const todaysRevenue = todaysOrders.reduce((sum, order) => sum + parseFloat(order.billAmount || 0), 0);
+        document.getElementById('todays-total-revenue-orders').textContent = todaysRevenue.toFixed(2);
+        
+        const todaysPaid = todaysPayments.reduce((sum, payment) => sum + parseFloat(payment.amount || 0), 0);
+        document.getElementById('todays-total-paid-orders').textContent = todaysPaid.toFixed(2);
+        
+        document.getElementById('todays-total-unpaid-orders').textContent = (todaysRevenue - todaysPaid).toFixed(2);
+        
+        // Update current month statistics
+        document.getElementById('current-month-total-orders').textContent = currentMonthOrders.length;
+        
+        const currentMonthRevenue = currentMonthOrders.reduce((sum, order) => sum + parseFloat(order.billAmount || 0), 0);
+        document.getElementById('current-month-total-revenue-orders').textContent = currentMonthRevenue.toFixed(2);
+        
+        const currentMonthPaid = currentMonthPayments.reduce((sum, payment) => sum + parseFloat(payment.amount || 0), 0);
+        document.getElementById('current-month-total-paid-orders').textContent = currentMonthPaid.toFixed(2);
+        
+        document.getElementById('current-month-total-unpaid-orders').textContent = (currentMonthRevenue - currentMonthPaid).toFixed(2);
+        
+        // Update last month statistics
+        document.getElementById('last-month-total-orders').textContent = lastMonthOrders.length;
+        
+        const lastMonthRevenue = lastMonthOrders.reduce((sum, order) => sum + parseFloat(order.billAmount || 0), 0);
+        document.getElementById('last-month-total-revenue-orders').textContent = lastMonthRevenue.toFixed(2);
+        
+        const lastMonthPaid = lastMonthPayments.reduce((sum, payment) => sum + parseFloat(payment.amount || 0), 0);
+        document.getElementById('last-month-total-paid-orders').textContent = lastMonthPaid.toFixed(2);
+        
+        document.getElementById('last-month-total-unpaid-orders').textContent = (lastMonthRevenue - lastMonthPaid).toFixed(2);
+        
+        // Show recent orders
+        showRecentOrders();
+    }
+    
+    // Show recent orders on dashboard
+    function showRecentOrders() {
+        const container = document.getElementById('recent-orders-container');
+        const recentOrders = orders.slice(-5);
+        
+        if (recentOrders.length === 0) {
+            container.innerHTML = '<p style="text-align: center; padding: 20px;">No recent orders found.</p>';
+            return;
+        }
+        
+        // Desktop view (table)
+        let desktopHtml = `
+            <div style="overflow-x: auto; display: none;" class="desktop-view">
+                <table style="width: 100%; border-collapse: collapse; margin: 20px 0; font-family: Arial, sans-serif;">
+                    <thead>
+                        <tr style="background-color: #f5f7fa;">
+                            <th style="padding: 12px; text-align: left; border-bottom: 2px solid #ddd;">Order ID</th>
+                            <th style="padding: 12px; text-align: left; border-bottom: 2px solid #ddd;">Date</th>
+                            <th style="padding: 12px; text-align: left; border-bottom: 2px solid #ddd;">Customer</th>
+                            <th style="padding: 12px; text-align: left; border-bottom: 2px solid #ddd;">Amount</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+        `;
+        
+        // Mobile view (cards)
+        let mobileHtml = `
+            <div style="display: none;" class="mobile-view">
+                <h3 style="margin-bottom: 15px; font-family: Arial, sans-serif;">Recent Orders</h3>
+        `;
+        
+        recentOrders.forEach(order => {
+            // Desktop table row
+            desktopHtml += `
+                <tr style="border-bottom: 1px solid #eee;">
+                    <td style="padding: 12px;">${order.id}</td>
+                    <td style="padding: 12px;">${order.date}</td>
+                    <td style="padding: 12px;">${getCustomerName(order.customerId)}</td>
+                    <td style="padding: 12px;"><span class="inr">₹</span> ${parseFloat(order.billAmount).toFixed(2)}</td>
+                </tr>
+            `;
+            
+            // Mobile card
+            mobileHtml += `
+                <div style="background: white; border-radius: 8px; padding: 15px; margin-bottom: 15px; box-shadow: 0 2px 5px rgba(0,0,0,0.1);">
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+                        <strong>Order ID:</strong> <span>${order.id}</span>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+                        <strong>Date:</strong> <span>${order.date}</span>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+                        <strong>Customer:</strong> <span>${getCustomerName(order.customerId)}</span>
+                    </div>
+                    <div style="display: flex; justify-content: space-between;">
+                        <strong>Amount:</strong> <span><span class="inr">₹</span> ${parseFloat(order.billAmount).toFixed(2)}</span>
+                    </div>
+                </div>
+            `;
+        });
+        
+        desktopHtml += `</tbody></table></div>`;
+        mobileHtml += `</div>`;
+        
+        container.innerHTML = desktopHtml + mobileHtml;
+        
+        // Show appropriate view based on screen width
+        const desktopView = container.querySelector('.desktop-view');
+        const mobileView = container.querySelector('.mobile-view');
+        
+        function checkScreenSize() {
+            if (window.innerWidth >= 768) {
+                desktopView.style.display = 'block';
+                mobileView.style.display = 'none';
+            } else {
+                desktopView.style.display = 'none';
+                mobileView.style.display = 'block';
+            }
+        }
+        
+        // Initial check
+        checkScreenSize();
+        
+        // Update on window resize
+        window.addEventListener('resize', checkScreenSize);
+    }
+     
+    // Populate customer dropdowns in order and payment forms
+    function populateCustomerDropdowns() {
+      const orderCustomer = document.getElementById('orderCustomer');
+      const paymentCustomer = document.getElementById('paymentCustomer');
+       
+      
+      // Clear existing options but keep the first default option
+      while (orderCustomer.options.length > 1) orderCustomer.remove(1);
+      while (paymentCustomer.options.length > 1) paymentCustomer.remove(1);
+       
+      
+      // Add customer options
+      customers.forEach(customer => {
+        const option = document.createElement('option');
+        option.value = customer.id;
+        option.textContent = `${customer.name} (${customer.mobile})`;
+        orderCustomer.appendChild(option.cloneNode(true));
+        paymentCustomer.appendChild(option.cloneNode(true));
+        
+      });
+    }
+    
+    // Populate items dropdown in order form
+    function populateItemsDropdown() {
+      const orderItems = document.getElementById('orderItems');
+      
+      // Clear existing options
+      orderItems.innerHTML = '';
+      
+      // Add item options
+      items.forEach(item => {
+        const option = document.createElement('option');
+        option.value = item.id;
+        option.textContent = `${item.name} - ₹${parseFloat(item.price).toFixed(2)}`;
+        orderItems.appendChild(option);
+      });
+    }
+    
+    // Get customer name by ID
+    function getCustomerName(customerId) {
+      const customer = customers.find(c => c.id == customerId);
+      return customer ? customer.name : 'N/A';
+    }
+    
+    // Get item names by IDs
+    // Get item names by IDs
+    function getItemNames(itemIds) {
+      if (!itemIds) return 'N/A';
+
+      // Ensure itemIds is always an array
+      let ids = [];
+
+      if (Array.isArray(itemIds)) {
+        ids = itemIds.map(id => String(id).trim());
+      } else if (typeof itemIds === 'number') {
+        ids = [String(itemIds)];
+      } else if (typeof itemIds === 'string') {
+        ids = itemIds.split(',').map(id => id.trim());
+      } else {
+        return 'N/A';
+      }
+
+      return ids.map(id => {
+        const item = items.find(i => i.id == id);
+        return item ? item.name : `Item#${id}`;
+      }).join(', ');
+    } 
+    // Render customers table with pagination
+    function renderCustomersTable(data = customers) {
+      showLoader('customers');
+      
+      const container = document.getElementById('customersTableContainer');
+      const mobileContainer = document.getElementById('customersMobileContainer');
+      
+      if (data.length === 0) {
+        container.innerHTML = '<p>No customers found.</p>';
+        mobileContainer.innerHTML = '<p>No customers found.</p>';
+        hideLoader('customers');
+        return;
+      }
+      
+      // Calculate pagination
+      const totalPages = Math.ceil(data.length / itemsPerPage);
+      const startIndex = (currentPage.customers - 1) * itemsPerPage;
+      const paginatedData = data.slice(startIndex, startIndex + itemsPerPage);
+      
+      // Desktop view
+      let tableHTML = `
+        <table>
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Name</th>
+              <th>Mobile</th>
+              <th>Address</th>
+              <th>Remarks</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+      `;
+      
+      paginatedData.forEach(customer => {
+        tableHTML += `
+          <tr>
+            <td>${customer.id}</td>
+            <td>${customer.name}</td>
+            <td>${customer.mobile}</td>
+            <td>${customer.address || ''}</td>
+            <td>${customer.remarks || ''}</td>
+            <td class="action-buttons">
+              <button class="action-btn btn-info" onclick="openModal('customerModal', 'edit', ${customer.id})"><i class="fas fa-edit"></i></button>
+              <button class="action-btn btn-warning" onclick="deleteCustomer(${customer.id})"><i class="fas fa-trash"></i></button>
+            </td>
+          </tr>
+        `;
+      });
+      
+      tableHTML += `</tbody></table>`;
+      container.innerHTML = tableHTML;
+      
+      // Mobile view
+      let mobileHTML = '';
+      paginatedData.forEach(customer => {
+        mobileHTML += `
+          <div class="mobile-card">
+            <div class="mobile-card-header">
+              <span>${customer.name}</span>
+              <span>ID: ${customer.id}</span>
+            </div>
+            <div class="mobile-card-body">
+              <div><span>Mobile:</span> <span>${customer.mobile}</span></div>
+              <div><span>Address:</span> <span>${customer.address || 'N/A'}</span></div>
+              <div><span>Remarks:</span> <span>${customer.remarks || 'N/A'}</span></div>
+            </div>
+            <div class="mobile-actions">
+              <button class="action-btn btn-info" onclick="openModal('customerModal', 'edit', ${customer.id})"><i class="fas fa-edit"></i> Edit</button>
+              <button class="action-btn btn-warning" onclick="deleteCustomer(${customer.id})"><i class="fas fa-trash"></i> Delete</button>
+            </div>
+          </div>
+        `;
+      });
+      
+      mobileContainer.innerHTML = mobileHTML;
+      
+      // Render pagination
+      renderPagination('customers', totalPages);
+      
+      hideLoader('customers');
+    }
+    
+    // Render items table with pagination
+    function renderItemsTable(data = items) {
+      showLoader('items');
+      
+      const container = document.getElementById('itemsTableContainer');
+      const mobileContainer = document.getElementById('itemsMobileContainer');
+      
+      if (data.length === 0) {
+        container.innerHTML = '<p>No items found.</p>';
+        mobileContainer.innerHTML = '<p>No items found.</p>';
+        hideLoader('items');
+        return;
+      }
+      
+      // Calculate pagination
+      const totalPages = Math.ceil(data.length / itemsPerPage);
+      const startIndex = (currentPage.items - 1) * itemsPerPage;
+      const paginatedData = data.slice(startIndex, startIndex + itemsPerPage);
+      
+      // Desktop view
+      let tableHTML = `
+        <table>
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Name</th>
+              <th>Price (<span class="inr">₹</span>)</th>
+              <th>Remarks</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+      `;
+      
+      paginatedData.forEach(item => {
+        tableHTML += `
+          <tr>
+            <td>${item.id}</td>
+            <td>${item.name}</td>
+            <td><span class="inr">₹</span> ${parseFloat(item.price).toFixed(2)}</td>
+            <td>${item.remarks || ''}</td>
+            <td class="action-buttons">
+              <button class="action-btn btn-info" onclick="openModal('itemModal', 'edit', ${item.id})"><i class="fas fa-edit"></i></button>
+              <button class="action-btn btn-warning" onclick="deleteItem(${item.id})"><i class="fas fa-trash"></i></button>
+            </td>
+          </tr>
+        `;
+      });
+      
+      tableHTML += `</tbody></table>`;
+      container.innerHTML = tableHTML;
+      
+      // Mobile view
+      let mobileHTML = '';
+      paginatedData.forEach(item => {
+        mobileHTML += `
+          <div class="mobile-card">
+            <div class="mobile-card-header">
+              <span>${item.name}</span>
+              <span>ID: ${item.id}</span>
+            </div>
+            <div class="mobile-card-body">
+              <div><span>Price:</span> <span><span class="inr">₹</span> ${parseFloat(item.price).toFixed(2)}</span></div>
+              <div><span>Remarks:</span> <span>${item.remarks || 'N/A'}</span></div>
+            </div>
+            <div class="mobile-actions">
+              <button class="action-btn btn-info" onclick="openModal('itemModal', 'edit', ${item.id})"><i class="fas fa-edit"></i> Edit</button>
+              <button class="action-btn btn-warning" onclick="deleteItem(${item.id})"><i class="fas fa-trash"></i> Delete</button>
+            </div>
+          </div>
+        `;
+      });
+      
+      mobileContainer.innerHTML = mobileHTML;
+      
+      // Render pagination
+      renderPagination('items', totalPages);
+      
+      hideLoader('items');
+    }
+    
+    // Render orders table with pagination
+    function renderOrdersTable(data = orders) {
+      showLoader('orders');
+      
+      const container = document.getElementById('ordersTableContainer');
+      const mobileContainer = document.getElementById('ordersMobileContainer');
+      
+      if (data.length === 0) {
+        container.innerHTML = '<p>No orders found.</p>';
+        mobileContainer.innerHTML = '<p>No orders found.</p>';
+        hideLoader('orders');
+        return;
+      }
+      
+      // Calculate pagination
+      const totalPages = Math.ceil(data.length / itemsPerPage);
+      const startIndex = (currentPage.orders - 1) * itemsPerPage;
+      const paginatedData = data.slice(startIndex, startIndex + itemsPerPage);
+      
+      // Desktop view
+      let tableHTML = `
+        <table>
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Date</th>
+              <th>Customer</th>
+              <th>Items</th>
+              <th>Bill Amount (<span class="inr">₹</span>)</th>
+              <th>Remarks</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+      `;
+      
+      paginatedData.forEach(order => {
+        tableHTML += `
+          <tr>
+            <td>${order.id}</td>
+            <td>${order.date}</td>
+            <td>${getCustomerName(order.customerId)}</td>
+            <td>${getItemNames(order.items)}</td>
+            <td><span class="inr">₹</span> ${parseFloat(order.billAmount).toFixed(2)}</td>
+            <td>${order.remarks || ''}</td>
+            <td class="action-buttons">
+              <button class="action-btn btn-info" onclick="openModal('orderModal', 'edit', ${order.id})"><i class="fas fa-edit"></i></button>
+              <button class="action-btn btn-warning" onclick="deleteOrder(${order.id})"><i class="fas fa-trash"></i></button>
+            </td>
+          </tr>
+        `;
+      });
+      
+      tableHTML += `</tbody></table>`;
+      container.innerHTML = tableHTML;
+      
+      // Mobile view
+      let mobileHTML = '';
+      paginatedData.forEach(order => {
+        mobileHTML += `
+          <div class="mobile-card">
+            <div class="mobile-card-header">
+              <span>Order #${order.id}</span>
+              <span>${order.date}</span>
+            </div>
+            <div class="mobile-card-body">
+              <div><span>Customer:</span> <span>${getCustomerName(order.customerId)}</span></div>
+              <div><span>Items:</span> <span>${getItemNames(order.items)}</span></div>
+              <div><span>Amount:</span> <span><span class="inr">₹</span> ${parseFloat(order.billAmount).toFixed(2)}</span></div>
+              <div><span>Remarks:</span> <span>${order.remarks || 'N/A'}</span></div>
+            </div>
+            <div class="mobile-actions">
+              <button class="action-btn btn-info" onclick="openModal('orderModal', 'edit', ${order.id})"><i class="fas fa-edit"></i> Edit</button>
+              <button class="action-btn btn-warning" onclick="deleteOrder(${order.id})"><i class="fas fa-trash"></i> Delete</button>
+            </div>
+          </div>
+        `;
+      });
+      
+      mobileContainer.innerHTML = mobileHTML;
+      
+      // Render pagination
+      renderPagination('orders', totalPages);
+      
+      hideLoader('orders');
+    }
+    
+    // Render payments table with pagination
+    function renderPaymentsTable(data = payments) {
+      showLoader('payments');
+      
+      const container = document.getElementById('paymentsTableContainer');
+      const mobileContainer = document.getElementById('paymentsMobileContainer');
+      
+      if (data.length === 0) {
+        container.innerHTML = '<p>No payments found.</p>';
+        mobileContainer.innerHTML = '<p>No payments found.</p>';
+        hideLoader('payments');
+        return;
+      }
+      
+      // Calculate pagination
+      const totalPages = Math.ceil(data.length / itemsPerPage);
+      const startIndex = (currentPage.payments - 1) * itemsPerPage;
+      const paginatedData = data.slice(startIndex, startIndex + itemsPerPage);
+      
+      // Desktop view
+      let tableHTML = `
+        <table>
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Date</th>
+              <th>Customer</th>
+              <th>Amount (<span class="inr">₹</span>)</th>
+              <th>Remarks</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+      `;
+      
+      paginatedData.forEach(payment => {
+        tableHTML += `
+          <tr>
+            <td>${payment.id}</td>
+            <td>${payment.date}</td>
+            <td>${getCustomerName(payment.customerId)}</td>
+            <td><span class="inr">₹</span> ${parseFloat(payment.amount).toFixed(2)}</td>
+            <td>${payment.remarks || ''}</td>
+            <td class="action-buttons">
+              <button class="action-btn btn-info" onclick="openModal('paymentModal', 'edit', ${payment.id})"><i class="fas fa-edit"></i></button>
+              <button class="action-btn btn-warning" onclick="deletePayment(${payment.id})"><i class="fas fa-trash"></i></button>
+            </td>
+          </tr>
+        `;
+      });
+      
+      tableHTML += `</tbody></table>`;
+      container.innerHTML = tableHTML;
+      
+      // Mobile view
+      let mobileHTML = '';
+      paginatedData.forEach(payment => {
+        mobileHTML += `
+          <div class="mobile-card">
+            <div class="mobile-card-header">
+              <span>Payment #${payment.id}</span>
+              <span>${payment.date}</span>
+            </div>
+            <div class="mobile-card-body">
+              <div><span>Customer:</span> <span>${getCustomerName(payment.customerId)}</span></div>
+              <div><span>Amount:</span> <span><span class="inr">₹</span> ${parseFloat(payment.amount).toFixed(2)}</span></div>
+              <div><span>Remarks:</span> <span>${payment.remarks || 'N/A'}</span></div>
+            </div>
+            <div class="mobile-actions">
+              <button class="action-btn btn-info" onclick="openModal('paymentModal', 'edit', ${payment.id})"><i class="fas fa-edit"></i> Edit</button>
+              <button class="action-btn btn-warning" onclick="deletePayment(${payment.id})"><i class="fas fa-trash"></i> Delete</button>
+            </div>
+          </div>
+        `;
+      });
+      
+      mobileContainer.innerHTML = mobileHTML;
+      
+      // Render pagination
+      renderPagination('payments', totalPages);
+      
+      hideLoader('payments');
+    }
+    
+    // Render pagination controls
+    function renderPagination(section, totalPages) {
+      const paginationContainer = document.getElementById(`${section}-pagination`);
+      
+      if (totalPages <= 1) {
+        paginationContainer.innerHTML = '';
+        return;
+      }
+      
+      let paginationHTML = '';
+      
+      // Previous button
+      paginationHTML += `
+        <button ${currentPage[section] === 1 ? 'disabled' : ''} 
+                onclick="changePage('${section}', ${currentPage[section] - 1})">
+          <i class="fas fa-chevron-left"></i>
+        </button>
+      `;
+      
+      // Page numbers
+      const maxVisiblePages = 5;
+      let startPage = Math.max(1, currentPage[section] - Math.floor(maxVisiblePages / 2));
+      let endPage = Math.min(totalPages, startPage + maxVisiblePages - 1);
+      
+      if (endPage - startPage + 1 < maxVisiblePages) {
+        startPage = Math.max(1, endPage - maxVisiblePages + 1);
+      }
+      
+      for (let i = startPage; i <= endPage; i++) {
+        paginationHTML += `
+          <button class="${currentPage[section] === i ? 'active' : ''}" 
+                  onclick="changePage('${section}', ${i})">
+            ${i}
+          </button>
+        `;
+      }
+      
+      // Next button
+      paginationHTML += `
+        <button ${currentPage[section] === totalPages ? 'disabled' : ''} 
+                onclick="changePage('${section}', ${currentPage[section] + 1})">
+          <i class="fas fa-chevron-right"></i>
+        </button>
+      `;
+      
+      paginationContainer.innerHTML = paginationHTML;
+    }
+    
+    // Change page for pagination
+    function changePage(section, page) {
+      currentPage[section] = page;
+      
+      switch(section) {
+        case 'customers':
+          renderCustomersTable();
+          break;
+        case 'items':
+          renderItemsTable();
+          break;
+        case 'orders':
+          renderOrdersTable();
+          break;
+        case 'payments':
+          renderPaymentsTable();
+          break;
+      }
+    }
+    
+    // Open modal for add/edit
+    function openModal(modalId, action, id = null) {
+      const modal = document.getElementById(modalId);
+      const title = modal.querySelector('h2');
+      
+      // Reset form
+      modal.querySelector('form').reset();
+      
+      if (action === 'add') {
+        title.innerHTML = modalId === 'customerModal' ? '<i class="fas fa-user"></i> Add Customer' : 
+                         modalId === 'itemModal' ? '<i class="fas fa-coffee"></i> Add Item' :
+                         modalId === 'orderModal' ? '<i class="fas fa-receipt"></i> Create Order' : 
+                         '<i class="fas fa-money-bill-wave"></i> Record Payment';
+      } else if (action === 'edit') {
+        title.innerHTML = modalId === 'customerModal' ? '<i class="fas fa-user-edit"></i> Edit Customer' : 
+                         modalId === 'itemModal' ? '<i class="fas fa-edit"></i> Edit Item' :
+                         modalId === 'orderModal' ? '<i class="fas fa-edit"></i> Edit Order' : 
+                         '<i class="fas fa-edit"></i> Edit Payment';
+        
+        // Fill form with existing data
+        if (modalId === 'customerModal') {
+          const customer = customers.find(c => c.id == id);
+          if (customer) {
+            document.getElementById('customerId').value = customer.id;
+            document.getElementById('customerName').value = customer.name;
+            document.getElementById('customerMobile').value = customer.mobile;
+            document.getElementById('customerAddress').value = customer.address || '';
+            document.getElementById('customerRemarks').value = customer.remarks || '';
+          }
+        } else if (modalId === 'itemModal') {
+          const item = items.find(i => i.id == id);
+          if (item) {
+            document.getElementById('itemId').value = item.id;
+            document.getElementById('itemName').value = item.name;
+            document.getElementById('itemPrice').value = item.price;
+            document.getElementById('itemRemarks').value = item.remarks || '';
+          }
+        } else if (modalId === 'orderModal') {
+          const order = orders.find(o => o.id == id);
+          if (order) {
+            document.getElementById('orderId').value = order.id;
+            document.getElementById('orderDate').value = order.date;
+            document.getElementById('orderCustomer').value = order.customerId;
+            
+            // Set selected items
+            // const itemIds = order.items ? order.items.split(',').map(id => id.trim()) : [];
+            const itemIds = (() => {
+              // Handle null/undefined cases
+              if (order.items === null || order.items === undefined) {
+                return [];
+              }
+              
+              // Handle array case
+              if (Array.isArray(order.items)) {
+                return order.items;
+              }
+              
+              // Handle string cases
+              if (typeof order.items === 'string') {
+                // Handle empty string
+                if (order.items.trim() === '') {
+                  return [];
+                }
+                
+                // Handle string with commas
+                if (order.items.includes(',')) {
+                  return order.items.split(',').map(id => id.trim()).filter(id => id !== '');
+                }
+                
+                // Handle single item string (no commas)
+                return [order.items.trim()];
+              }
+              
+              // Handle number cases (convert to string)
+              if (typeof order.items === 'number') {
+                return [order.items.toString()];
+              }
+              
+              // Handle any other unexpected types
+              return [];
+            })();
+            const itemsSelect = document.getElementById('orderItems');
+            for (let i = 0; i < itemsSelect.options.length; i++) {
+              itemsSelect.options[i].selected = itemIds.includes(itemsSelect.options[i].value);
+            }
+            
+            document.getElementById('orderBillAmount').value = order.billAmount;
+            document.getElementById('orderRemarks').value = order.remarks || '';
+          }
+        } else if (modalId === 'paymentModal') {
+          const payment = payments.find(p => p.id == id);
+          if (payment) {
+            document.getElementById('paymentId').value = payment.id;
+            document.getElementById('paymentDate').value = payment.date;
+            document.getElementById('paymentCustomer').value = payment.customerId;
+            document.getElementById('paymentAmount').value = payment.amount;
+            document.getElementById('paymentRemarks').value = payment.remarks || '';
+          }
+        }
+      }
+      
+      modal.style.display = 'flex';
+    }
+
+    // Auto update Bill Amount when items are selected
+    document.getElementById('orderItems').addEventListener('change', function () {
+      const selectedIds = Array.from(this.selectedOptions).map(opt => opt.value);
+      let total = 0;
+      selectedIds.forEach(id => {
+        const item = items.find(i => i.id == id);
+        if (item) total += parseFloat(item.price || 0);
+      });
+      document.getElementById('orderBillAmount').value = total.toFixed(2);
+    });
+
+
+    // Close modal
+    function closeModal(modalId) {
+      document.getElementById(modalId).style.display = 'none';
+    }
+    
+    // Handle customer form submission
+    function handleCustomerSubmit(e) {
+      e.preventDefault();
+      
+      const saveBtn = document.getElementById('saveCustomerBtn');
+      setButtonLoading(saveBtn, true);
+      
+      const customerData = {
+        id: document.getElementById('customerId').value || null,
+        name: document.getElementById('customerName').value,
+        mobile: document.getElementById('customerMobile').value,
+        address: document.getElementById('customerAddress').value,
+        remarks: document.getElementById('customerRemarks').value
+      };
+      
+      google.script.run
+        .withSuccessHandler(() => {
+          setButtonLoading(saveBtn, false);
+          closeModal('customerModal');
+          loadAllData();
+          showToast('Customer saved successfully');
+        })
+        .withFailureHandler(error => {
+          setButtonLoading(saveBtn, false);
+          showError(error);
+        })
+        .saveCustomer(customerData);
+    }
+    
+    // Handle item form submission
+    function handleItemSubmit(e) {
+      e.preventDefault();
+      
+      const saveBtn = document.getElementById('saveItemBtn');
+      setButtonLoading(saveBtn, true);
+      
+      const itemData = {
+        id: document.getElementById('itemId').value || null,
+        name: document.getElementById('itemName').value,
+        price: document.getElementById('itemPrice').value,
+        remarks: document.getElementById('itemRemarks').value
+      };
+      
+      google.script.run
+        .withSuccessHandler(() => {
+          setButtonLoading(saveBtn, false);
+          closeModal('itemModal');
+          loadAllData();
+          showToast('Item saved successfully');
+        })
+        .withFailureHandler(error => {
+          setButtonLoading(saveBtn, false);
+          showError(error);
+        })
+        .saveItem(itemData);
+    }
+    
+    // Handle order form submission
+    function handleOrderSubmit(e) {
+      e.preventDefault();
+      
+      const saveBtn = document.getElementById('saveOrderBtn');
+      setButtonLoading(saveBtn, true);
+      
+      // Get selected items
+      const itemsSelect = document.getElementById('orderItems');
+      const selectedItems = Array.from(itemsSelect.selectedOptions).map(option => option.value);
+      console.log('-----selectedItems---',selectedItems)
+      const orderData = {
+        id: document.getElementById('orderId').value || null,
+        date: document.getElementById('orderDate').value,
+        customerId: document.getElementById('orderCustomer').value,
+        items: selectedItems.join(','),
+        billAmount: document.getElementById('orderBillAmount').value,
+        remarks: document.getElementById('orderRemarks').value
+      };
+      
+      google.script.run
+        .withSuccessHandler(() => {
+          setButtonLoading(saveBtn, false);
+          closeModal('orderModal');
+          loadAllData();
+          showToast('Order saved successfully');
+        })
+        .withFailureHandler(error => {
+          setButtonLoading(saveBtn, false);
+          showError(error);
+        })
+        .saveOrder(orderData);
+    }
+    
+    // Handle payment form submission
+    function handlePaymentSubmit(e) {
+      e.preventDefault();
+      
+      const saveBtn = document.getElementById('savePaymentBtn');
+      setButtonLoading(saveBtn, true);
+      
+      const paymentData = {
+        id: document.getElementById('paymentId').value || null,
+        date: document.getElementById('paymentDate').value,
+        customerId: document.getElementById('paymentCustomer').value,
+        amount: document.getElementById('paymentAmount').value,
+        remarks: document.getElementById('paymentRemarks').value
+      };
+      
+      google.script.run
+        .withSuccessHandler(() => {
+          setButtonLoading(saveBtn, false);
+          closeModal('paymentModal');
+          loadAllData();
+          showToast('Payment saved successfully');
+        })
+        .withFailureHandler(error => {
+          setButtonLoading(saveBtn, false);
+          showError(error);
+        })
+        .savePayment(paymentData);
+    }
+    
+    // Delete customer
+    function deleteCustomer(id) {
+      if (confirm('Are you sure you want to delete this customer?')) {
+        google.script.run
+          .withSuccessHandler(() => {
+            loadAllData();
+            showToast('Customer deleted successfully');
+          })
+          .withFailureHandler(showError)
+          .deleteCustomer(id);
+      }
+    }
+    
+    // Delete item
+    function deleteItem(id) {
+      if (confirm('Are you sure you want to delete this item?')) {
+        google.script.run
+          .withSuccessHandler(() => {
+            loadAllData();
+            showToast('Item deleted successfully');
+          })
+          .withFailureHandler(showError)
+          .deleteItem(id);
+      }
+    }
+    
+    // Delete order
+    function deleteOrder(id) {
+      if (confirm('Are you sure you want to delete this order?')) {
+        google.script.run
+          .withSuccessHandler(() => {
+            loadAllData();
+            showToast('Order deleted successfully');
+          })
+          .withFailureHandler(showError)
+          .deleteOrder(id);
+      }
+    }
+    
+    // Delete payment
+    function deletePayment(id) {
+      if (confirm('Are you sure you want to delete this payment?')) {
+        google.script.run
+          .withSuccessHandler(() => {
+            loadAllData();
+            showToast('Payment deleted successfully');
+          })
+          .withFailureHandler(showError)
+          .deletePayment(id);
+      }
+    }
+    
+    // Search functions
+    function searchCustomers() {
+      const searchBtn = document.getElementById('searchCustomerBtn');
+      setButtonLoading(searchBtn, true);
+      
+      setTimeout(() => {
+        const query = document.getElementById('customerSearch').value.toLowerCase();
+        const filtered = customers.filter(customer => 
+          customer.name.toString().toLowerCase().includes(query) || 
+          customer.mobile.toString().toLowerCase().includes(query) ||
+          (customer.address && customer.address.toLowerCase().includes(query)) ||
+          (customer.remarks && customer.remarks.toLowerCase().includes(query))
+        );
+        currentPage.customers = 1;
+        renderCustomersTable(filtered);
+        setButtonLoading(searchBtn, false);
+      }, 500);
+    }
+    
+    function searchItems() {
+      const searchBtn = document.getElementById('searchItemBtn');
+      setButtonLoading(searchBtn, true);
+      
+      setTimeout(() => {
+        const query = document.getElementById('itemSearch').value.toLowerCase();
+        const filtered = items.filter(item => 
+          item.name.toLowerCase().includes(query) || 
+          (item.remarks && item.remarks.toLowerCase().includes(query))
+        );
+        currentPage.items = 1;
+        renderItemsTable(filtered);
+        setButtonLoading(searchBtn, false);
+      }, 500);
+    }
+    
+    function searchOrders() {
+      const searchBtn = document.getElementById('searchOrderBtn');
+      setButtonLoading(searchBtn, true);
+      
+      setTimeout(() => {
+        const query = document.getElementById('orderSearch').value.toLowerCase();
+        const dateFrom = document.getElementById('orderDateFrom').value;
+        const dateTo = document.getElementById('orderDateTo').value;
+        
+        const filtered = orders.filter(order => {
+          const matchesSearch = (
+            order.date.toLowerCase().includes(query) || 
+            getCustomerName(order.customerId).toLowerCase().includes(query) ||
+            getItemNames(order.items).toLowerCase().includes(query) ||
+            (order.remarks && order.remarks.toLowerCase().includes(query))
+          );
+          
+          const matchesDate = (
+            (!dateFrom || order.date >= dateFrom) &&
+            (!dateTo || order.date <= dateTo)
+          );
+          
+          return matchesSearch && matchesDate;
+        });
+        
+        currentPage.orders = 1;
+        renderOrdersTable(filtered);
+        setButtonLoading(searchBtn, false);
+      }, 500);
+    }
+    
+    function searchPayments() {
+      const searchBtn = document.getElementById('searchPaymentBtn');
+      setButtonLoading(searchBtn, true);
+      
+      setTimeout(() => {
+        const query = document.getElementById('paymentSearch').value.toLowerCase();
+        const dateFrom = document.getElementById('paymentDateFrom').value;
+        const dateTo = document.getElementById('paymentDateTo').value;
+        
+        const filtered = payments.filter(payment => {
+          const matchesSearch = (
+            payment.date.toLowerCase().includes(query) || 
+            getCustomerName(payment.customerId).toLowerCase().includes(query) ||
+            (payment.remarks && payment.remarks.toLowerCase().includes(query))
+          );
+          
+          const matchesDate = (
+            (!dateFrom || payment.date >= dateFrom) &&
+            (!dateTo || payment.date <= dateTo)
+          );
+          
+          return matchesSearch && matchesDate;
+        });
+        
+        currentPage.payments = 1;
+        renderPaymentsTable(filtered);
+        setButtonLoading(searchBtn, false);
+      }, 500);
+    }
+    // Generate reports
+  function generateReport(type) {
+    showLoader('reports');
+    
+    const dateFrom = document.getElementById('reportDateFrom').value;
+    const dateTo = document.getElementById('reportDateTo').value;
+    const customerSelect = document.getElementById('selectCustomer')?.value || ""; 
+    const customerId = customerSelect ? customerSelect.value : null;
+    
+    let reportData = {};
+    let title = '';
+    
+    if (1 || type === 'customer-financial') {
+      // Customer Financial Report
+      const filteredOrders = orders.filter(order => {
+        const inDateRange = (!dateFrom || order.date >= dateFrom) && (!dateTo || order.date <= dateTo);
+        const matchesCustomer = !customerId || customerId === 'all' || order.customerId === customerId;
+        return inDateRange && matchesCustomer;
+      });
+      
+      const filteredPayments = payments.filter(payment => {
+        const inDateRange = (!dateFrom || payment.date >= dateFrom) && (!dateTo || payment.date <= dateTo);
+        const matchesCustomer = !customerId || customerId === 'all' || payment.customerId === customerId;
+        return inDateRange && matchesCustomer;
+      });
+      
+      // Calculate customer financial data
+      const customerData = {};
+      
+      if (customerId && customerId !== 'all') {
+        // Single customer report
+        const customerOrders = filteredOrders.filter(order => order.customerId === customerId);
+        const customerPayments = filteredPayments.filter(payment => payment.customerId === customerId);
+        
+        const totalSpent = customerOrders.reduce((sum, order) => sum + parseFloat(order.billAmount || 0), 0);
+        const totalPaid = customerPayments.reduce((sum, payment) => sum + parseFloat(payment.amount || 0), 0);
+        const balance = totalSpent - totalPaid;
+        
+        customerData[customerId] = {
+          name: getCustomerName(customerId),
+          totalSpent,
+          totalPaid,
+          balance,
+          status: balance <= 0 ? 'Paid' : 'Unpaid'
+        };
+      } else {
+        // All customers report or filtered by date only
+        // Process orders to get total spent per customer
+        filteredOrders.forEach(order => {
+          if (!customerData[order.customerId]) {
+            customerData[order.customerId] = {
+              name: getCustomerName(order.customerId),
+              totalSpent: 0,
+              totalPaid: 0,
+              balance: 0,
+              status: 'Paid'
+            };
+          }
+          customerData[order.customerId].totalSpent += parseFloat(order.billAmount || 0);
+        });
+        
+        // Process payments to get total paid per customer
+        filteredPayments.forEach(payment => {
+          if (!customerData[payment.customerId]) {
+            customerData[payment.customerId] = {
+              name: getCustomerName(payment.customerId),
+              totalSpent: 0,
+              totalPaid: 0,
+              balance: 0,
+              status: 'Paid'
+            };
+          }
+          customerData[payment.customerId].totalPaid += parseFloat(payment.amount || 0);
+        });
+        
+        // Calculate balance and status for each customer
+        Object.keys(customerData).forEach(custId => {
+          const customer = customerData[custId];
+          customer.balance = customer.totalSpent - customer.totalPaid;
+          customer.status = customer.balance <= 0 ? 'Paid' : 'Unpaid';
+        });
+      }
+      
+      // Calculate overall totals with correct balance logic
+      const allCustomers = Object.values(customerData);
+      const totalSpent = allCustomers.reduce((sum, customer) => sum + customer.totalSpent, 0);
+      const totalPaid = allCustomers.reduce((sum, customer) => sum + customer.totalPaid, 0);
+      const totalBalance = totalSpent - totalPaid;
+      
+      reportData = {
+        customerData,
+        totalCustomers: allCustomers.length,
+        totalSpent,
+        totalPaid,
+        totalBalance,
+        customerId
+      };
+      
+      if (customerId && customerId !== 'all') {
+        title = `Customer Financial Report - ${getCustomerName(customerId)}`;
+      } else {
+        title = 'Customer Financial Report';
+        if (customerId === 'all') {
+          title += ' - All Customers';
+        }
+      }
+    }
+    
+    // Render report
+    renderReport(title, reportData, dateFrom, dateTo);
+    
+    hideLoader('reports');
+  }
+
+// Render report
+function renderReport(title, data, dateFrom, dateTo) {
+    const container = document.getElementById('report-container');
+    
+    let html = `
+      <div class="card">
+        <div class="card-header">
+          <h2>${title}</h2>
+          <span>${dateFrom || 'Start'} to ${dateTo || 'End'}</span>
+        </div>
+        <div class="card-body">
+          <div class="stats-cards">
+    `;
+    
+    // Add customer financial stats if available
+    if (data.customerData) {
+      // Determine balance class for overall balance
+      const totalBalanceClass = data.totalBalance > 0 ? 'negative-balance' : '';
+      
+      html += `
+            <div class="stat-card">
+              <i class="fas fa-users"></i>
+              <p>Total Customers</p>
+              <h3>${data.totalCustomers || 0}</h3>
+            </div>
+            <div class="stat-card">
+              <i class="fas fa-money-bill-wave"></i>
+              <p>Total Spent</p>
+              <h3><span class="inr">₹</span> ${(data.totalSpent || 0).toFixed(2)}</h3>
+            </div>
+            <div class="stat-card">
+              <i class="fas fa-credit-card"></i>
+              <p>Total Paid</p>
+              <h3><span class="inr">₹</span> ${(data.totalPaid || 0).toFixed(2)}</h3>
+            </div>
+            <div class="stat-card">
+              <i class="fas fa-balance-scale"></i>
+              <p>Total Unpaid</p>
+              <h3><span class="inr">₹</span> ${((data.totalSpent || 0) - (data.totalPaid || 0)).toFixed(2)}</h3> 
+            </div>
+      `;
+    } else {
+      html += `<p>No data available for the selected criteria.</p>`;
+    }
+    
+    html += `</div>`;
+    
+    // Customer financial details section
+    if (data.customerData && Object.keys(data.customerData).length > 0) {
+      // Check screen width to determine layout
+      const isMobile = window.innerWidth <= 768;
+      if (!isMobile) {
+        // Desktop/Tablet - Tabular Layout
+        html += `
+          <div class="card">
+            <div class="card-header">
+              <h3>Customer Financial Details</h3>
+            </div>
+            <div class="card-body">
+              <div style="overflow-x: auto; width: 100%;">
+                <table style="min-width: 600px;">
+                  <thead>
+                    <tr>
+                      <th>Customer</th>
+                      <th>Total Spent (<span class="inr">₹</span>)</th>
+                      <th>Total Paid (<span class="inr">₹</span>)</th>
+                      <th>Total Unpaid (<span class="inr">₹</span>)</th>
+                      <th>Status</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+        `;
+        
+        Object.values(data.customerData).forEach(customer => {
+          const balance = customer.totalSpent - customer.totalPaid;
+          const balanceClass = balance > 0 ? 'negative-balance' : '';
+          const status = balance <= 0 ? 'Paid' : 'Unpaid';
+          const statusClass = status === 'Unpaid' ? 'status-unpaid' : 'status-paid';
+          
+          html += `
+            <tr>
+              <td>${customer.name}</td>
+              <td><span class="inr">₹</span> ${customer.totalSpent.toFixed(2)}</td>
+              <td><span class="inr">₹</span> ${customer.totalPaid.toFixed(2)}</td>
+              <td><span class="inr">₹</span> ${((customer.totalSpent || 0) - (customer.totalPaid || 0)).toFixed(2)}</td>
+              <td class="${statusClass}">${status}</td>
+            </tr>
+          `;
+        });
+        
+        html += `</tbody></table></div></div></div>`;
+        
+      } else {
+        // Mobile - Cards Layout
+        html += `
+          <div class="card">
+            <div class="card-header">
+              <h3>Customer Financial Details</h3>
+            </div>
+            <div class="card-body">
+              <div class="customer-cards">
+        `;
+        
+        Object.values(data.customerData).forEach(customer => {
+          const balance = customer.totalSpent - customer.totalPaid;
+          const balanceClass = balance > 0 ? 'negative-balance' : '';
+          const status = balance <= 0 ? 'Paid' : 'Unpaid';
+          const statusClass = status === 'Unpaid' ? 'status-unpaid' : 'status-paid';
+          
+          html += `
+            <div class="customer-card">
+              <div class="customer-card-header">
+                <h4>${customer.name}</h4>
+                <span class="customer-status ${statusClass}">${status}</span>
+              </div>
+              <div class="customer-card-body">
+                <div class="customer-detail">
+                  <span class="label">Total Spent:</span>
+                  <span class="value"><span class="inr">₹</span> ${customer.totalSpent.toFixed(2)}</span>
+                </div>
+                <div class="customer-detail">
+                  <span class="label">Total Paid:</span>
+                  <span class="value"><span class="inr">₹</span> ${customer.totalPaid.toFixed(2)}</span>
+                </div>
+                <div class="customer-detail">
+                  <span class="label">Total Unpaid:</span>
+                  <span class="value ${balanceClass}"><span class="inr">₹</span> ${((customer.totalSpent || 0) - (customer.totalPaid || 0)).toFixed(2)}</span>
+                </div>
+              </div>
+            </div>
+          `;
+        });
+        
+        html += `</div></div></div>`;
+      }
+      
+      // Add CSS for styling
+      html += `
+        <style>
+          .negative-balance {
+            color: #e74c3c;
+            font-weight: bold;
+          }
+          .status-paid {
+            color: #27ae60;
+            font-weight: bold;
+          }
+          .status-unpaid {
+            color: #e74c3c;
+            font-weight: bold;
+          }
+          
+          /* Mobile Cards Layout Styles */
+          .customer-cards {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+          }
+          
+          .customer-card {
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            padding: 16px;
+            background: white;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+          }
+          
+          .customer-card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+            padding-bottom: 8px;
+            border-bottom: 1px solid #f0f0f0;
+          }
+          
+          .customer-card-header h4 {
+            margin: 0;
+            font-size: 16px;
+            font-weight: 600;
+          }
+          
+          .customer-card-body {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+          }
+          
+          .customer-detail {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+          }
+          
+          .customer-detail .label {
+            font-weight: 500;
+            color: #666;
+          }
+          
+          .customer-detail .value {
+            font-weight: 600;
+          }
+          
+          @media (max-width: 768px) {
+            .customer-cards {
+              padding: 8px 0;
+            }
+          }
+        </style>
+      `;
+      
+      container.innerHTML = html;
+    }
+  }
+
+  // Print report
+  function printReport() {
+    window.print();
+  }
+    
+  // Export to Excel
+  function exportToExcel(type) {
+    const exportBtn = type === 'orders' ? document.getElementById('exportOrderBtn') : document.getElementById('exportPaymentBtn');
+    setButtonLoading(exportBtn, true);
+    
+    setTimeout(() => {
+      let data = [];
+      let fileName = '';
+      
+      if (type === 'orders') {
+        data = orders.map(order => {
+          return {
+            'Order ID': order.id,
+            'Date': order.date,
+            'Customer': getCustomerName(order.customerId),
+            'Items': getItemNames(order.items),
+            'Bill Amount': parseFloat(order.billAmount).toFixed(2),
+            'Remarks': order.remarks || ''
+          };
+        });
+        fileName = 'orders_export.xlsx';
+      } else if (type === 'payments') {
+        data = payments.map(payment => {
+          return {
+            'Payment ID': payment.id,
+            'Date': payment.date,
+            'Customer': getCustomerName(payment.customerId),
+            'Amount': parseFloat(payment.amount).toFixed(2),
+            'Remarks': payment.remarks || ''
+          };
+        });
+        fileName = 'payments_export.xlsx';
+      }
+      
+      if (data.length === 0) {
+        alert('No data to export!');
+        setButtonLoading(exportBtn, false);
+        return;
+      }
+      
+      const worksheet = XLSX.utils.json_to_sheet(data);
+      const workbook = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(workbook, worksheet, 'Sheet1');
+      XLSX.writeFile(workbook, fileName);
+      
+      setButtonLoading(exportBtn, false);
+      showToast('Data exported successfully');
+    }, 1000);
+  }
+    
+  // Show error message
+  function showError(error) {
+    const errorMsg = error.message || error;
+    alert('Error: ' + errorMsg);
+    console.error(error);
+    showToast('Error: ' + errorMsg, 'error');
+  }
+  </script>
+</body>
+</html>
